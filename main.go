@@ -7,31 +7,40 @@ import (
 )
 
 var Config *GameConfig
+var l *tl.BaseLevel
+var paddle *Paddle
+var ball *Ball
 
 func main() {
 	g := tl.NewGame()
 	g.SetDebugOn(true)
-	g.Screen().SetFps(60)
+	g.Screen().SetFps(50)
 
 	Config = new(GameConfig)
 	Config.w = 60
 	Config.h = 30
+	Config.lives = 3
 
 	initGame(g, Config.w, Config.h)
 	g.Start()
 }
 
 func initGame(g *tl.Game, w, h int) {
-	l := tl.NewBaseLevel(tl.Cell{})
+	l = tl.NewBaseLevel(tl.Cell{})
 	g.Screen().SetLevel(l)
-	initBoard(Config.w, Config.h, l)
-
-	l.AddEntity(NewPaddle((w+1)/2, h-1))
-	l.AddEntity(NewBall(w/2, h/2))
-	addBars(w, h, l)
+	initBoard(Config.w, Config.h)
+	initPlayer(w, h)
+	addBars(w, h)
 }
 
-func addBars(w, h int, l *tl.BaseLevel) {
+func initPlayer(w, h int) {
+	paddle = NewPaddle(w/2, h-1)
+	l.AddEntity(paddle)
+	ball = NewBall((w+6)/2, h-2)
+	l.AddEntity(ball)
+}
+
+func addBars(w, h int) {
 
 	//for lines
 	for a := 0; a < 4; a++ {
@@ -41,7 +50,7 @@ func addBars(w, h int, l *tl.BaseLevel) {
 	}
 }
 
-func initBoard(w, h int, l *tl.BaseLevel) {
+func initBoard(w, h int) {
 	// + 2 because of borders
 	for i := 0; i < w+2; i++ {
 
@@ -59,9 +68,16 @@ func initBoard(w, h int, l *tl.BaseLevel) {
 }
 
 func Lose() {
+	if Config.lives == 0 {
+		fmt.Printf("YOU LOST")
+		os.Exit(-1)
+	} else {
+		Config.lives = Config.lives - 1
+		l.RemoveEntity(ball)
+		l.RemoveEntity(paddle)
+		initPlayer(Config.w, Config.h)
+	}
 
-	fmt.Printf("YOU LOST")
-	os.Exit(-1)
 }
 func Win() {
 

@@ -24,6 +24,12 @@ func NewPaddle(x, y int) *Paddle {
 func (m *Paddle) Tick(ev tl.Event) {
 
 	if ev.Type == tl.EventKey {
+		temp_x, _ := m.Position()
+		if temp_x != m.px {
+			m.move = true
+		} else {
+			m.move = false
+		}
 		m.px, m.py = m.Position()
 		switch ev.Key {
 		case tl.KeyArrowRight:

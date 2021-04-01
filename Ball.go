@@ -6,12 +6,13 @@ import (
 
 type Ball struct {
 	*tl.Rectangle
-	w  int
-	h  int
-	px float64 // Previous x
-	py float64 // Previous y
-	vx float64 //Vector X
-	vy float64 //vector Y
+	w        int
+	h        int
+	px       float64 // Previous x
+	py       float64 // Previous y
+	vx       float64 //Vector X
+	vy       float64 //vector Y
+	attached bool    //If it's attached to the paddle
 }
 
 func NewBall(x, y int) *Ball {
@@ -27,10 +28,29 @@ func NewBall(x, y int) *Ball {
 	b.py = float64(y)
 
 	b.Rectangle = tl.NewRectangle(x, y, b.w, b.h, tl.ColorCyan)
+
+	b.attached = true
 	return b
 }
 
 func (b *Ball) Tick(ev tl.Event) {
+	if b.attached {
+
+		if ev.Type == tl.EventKey {
+			temp_x, _ := b.Position()
+			switch ev.Key {
+			case tl.KeyArrowRight:
+				b.SetPosition(temp_x+1, int(b.py))
+			case tl.KeyArrowLeft:
+				b.SetPosition(temp_x-1, int(b.py))
+			case tl.KeySpace:
+				b.attached = false
+				b.vx = floatRange(0.15, 0.25) * float64(intRange(-1, 1))
+				b.vy = floatRange(0.15, 0.25)
+			}
+		}
+		return
+	}
 	b.px += b.vx
 	b.py += b.vy
 	b.SetPosition(int(b.px), int(b.py))
@@ -43,6 +63,7 @@ func (b *Ball) Draw(s *tl.Screen) {
 func (b *Ball) Collide(p tl.Physical) {
 
 	if r, ok := p.(*BoardLimit); ok {
+		// Collision with walls
 		switch r.limitType {
 		case TOP:
 			b.SetPosition(int(b.px), int(b.py))
@@ -56,9 +77,25 @@ func (b *Ball) Collide(p tl.Physical) {
 			b.vx = -b.vx
 			break
 		}
-	} else if _, ok := p.(*Paddle); ok {
-		// Collision with walls
+	} else if paddle, ok := p.(*Paddle); ok {
+		if b.attached {
+			return
+		}
 		b.SetPosition(int(b.px), int(b.py))
+
+		if paddle.move {
+			if b.vx < 0 {
+				b.vx = -floatRange(0.15, 0.25)
+			} else {
+				b.vx = floatRange(0.15, 0.25)
+			}
+
+			if b.vy < 0 {
+				b.vy = -floatRange(0.15, 0.25)
+			} else {
+				b.vy = floatRange(0.15, 0.25)
+			}
+		}
 		b.vy = -b.vy
 	} else if _, ok := p.(*Bar); ok {
 		b.SetPosition(int(b.px), int(b.py))
