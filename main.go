@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	tl "github.com/JoelOtter/termloop"
 	"os"
+
+	tl "github.com/JoelOtter/termloop"
 )
 
 var Config *GameConfig

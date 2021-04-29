@@ -46,7 +46,7 @@ func (b *Ball) Tick(ev tl.Event) {
 			case tl.KeySpace:
 				b.attached = false
 				b.vx = floatRange(0.15, 0.25) * float64(intRange(-1, 1))
-				b.vy = floatRange(0.15, 0.25)
+				b.vy = -floatRange(0.15, 0.25)
 			}
 		}
 		return
@@ -77,6 +77,8 @@ func (b *Ball) Collide(p tl.Physical) {
 			b.vx = -b.vx
 			break
 		}
+
+		// Collision with the Paddle
 	} else if paddle, ok := p.(*Paddle); ok {
 		if b.attached {
 			return
@@ -90,13 +92,11 @@ func (b *Ball) Collide(p tl.Physical) {
 				b.vx = floatRange(0.15, 0.25)
 			}
 
-			if b.vy < 0 {
-				b.vy = -floatRange(0.15, 0.25)
-			} else {
-				b.vy = floatRange(0.15, 0.25)
-			}
+			b.vy = -floatRange(0.15, 0.25)
+
 		}
-		b.vy = -b.vy
+
+		// Collision with the Bar on top
 	} else if _, ok := p.(*Bar); ok {
 		b.SetPosition(int(b.px), int(b.py))
 		b.vy = -b.vy
